@@ -3,9 +3,9 @@ package org.krynicki.princeton;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Stack;
 
 import java.util.Comparator;
-import java.util.Stack;
 
 /**
  * Created by K on 2016-09-29.
@@ -20,7 +20,7 @@ public class Solver {
     };
 
     private SearchNode solution;
-    private boolean solavble;
+    private boolean solvable;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
@@ -40,7 +40,7 @@ public class Solver {
             current = mainSearch.delMin();
 
             if (current.board().isGoal()) {
-                solavble = true;
+                solvable = true;
                 solution = current;
                 return;
             }
@@ -54,7 +54,7 @@ public class Solver {
             current = twinSearch.delMin();
 
             if (current.board().isGoal()) {
-                solavble = false;
+                solvable = false;
                 solution = null;
                 return;
             }
@@ -96,12 +96,12 @@ public class Solver {
 
     // is the initial board solvable?
     public boolean isSolvable() {
-        return solavble;
+        return solvable;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
-        if (solavble) {
+        if (solvable) {
             return solution.moves();
         } else {
             return -1;
@@ -110,7 +110,7 @@ public class Solver {
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
-        if (solavble) {
+        if (solvable) {
             Stack<Board> result = new Stack<>();
             SearchNode sn = solution;
             while (sn != null) {

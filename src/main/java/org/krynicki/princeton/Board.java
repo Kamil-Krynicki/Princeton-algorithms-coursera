@@ -1,7 +1,7 @@
 package org.krynicki.princeton;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Random;
 
 /**
@@ -37,14 +37,14 @@ public class Board {
 
     // unit tests (not graded)
     public static void main(String[] args) {
-        Board b = new Board(new int[][]{{8, 1, 3}, {4, 0, 2}, {7, 6, 5}});
+        // Board b = new Board(new int[][]{{8, 1, 3}, {4, 0, 2}, {7, 6, 5}});
         Board b2 = new Board(new int[][]{{1, 2, 3}, {4, 5, 6}, {7, 8, 0}});
-        //System.out.println(b.hamming());
-        //System.out.println(b.manhattan());
-        //System.out.println(b2.isGoal());
+        // System.out.println(b.hamming());
+        // System.out.println(b.manhattan());
+        // System.out.println(b2.isGoal());
 
-        //System.out.println(b.toString());
-        //System.out.println(b2.toString());
+        // System.out.println(b.toString());
+        // System.out.println(b2.toString());
 
         System.out.println(b2.toString());
         System.out.println();
@@ -99,39 +99,41 @@ public class Board {
 
     // number of blocks out of place
     public int hamming() {
-        int hamming = this.hamming;
-        if (hamming < 0) {
-            hamming = 0;
+        int result = this.hamming;
+        if (result < 0) {
+            result = 0;
             int value = 1;
             for (int i = 0; i < blocks.length; i++) {
                 for (int j = 0; j < blocks[i].length; j++) {
                     if (blocks[i][j] != value && blocks[i][j] != 0) {
-                        hamming++;
+                        result++;
                     }
                     value++;
                 }
             }
-            this.hamming = hamming;
+            this.hamming = result;
         }
-        return hamming;
+        return result;
     }
 
     // sum of Manhattan distances between blocks and goal
     public int manhattan() {
-        int manhattan = this.manhatan;
-        if (manhattan < 0) {
-            manhattan = 0;
+        int result = this.manhatan;
+        if (result < 0) {
+            result = 0;
             int value = 1;
             for (int i = 0; i < blocks.length; i++) {
                 for (int j = 0; j < blocks[i].length; j++) {
                     if (blocks[i][j] != value && blocks[i][j] != 0) {
-                        manhattan += Math.abs((blocks[i][j] - 1) / dimension() - i) + Math.abs((blocks[i][j] - 1) % dimension() - j);
+                        result += Math.abs((blocks[i][j] - 1) / dimension() - i)
+                                + Math.abs((blocks[i][j] - 1) % dimension() - j);
                     }
                     value++;
                 }
             }
+            this.manhatan = result;
         }
-        return manhattan;
+        return result;
     }
 
     // is this board the goal board?
@@ -174,9 +176,10 @@ public class Board {
 
     // does this board equal y?
     public boolean equals(Object y) {
+        if (y == null) return false;
         if (y == this) return true;
 
-        if (!(y instanceof Board)) return false;
+        if (!(y.getClass().equals(Board.class))) return false;
 
         Board that = (Board) y;
 
@@ -194,7 +197,7 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        Collection<Board> neighbors = new HashSet<>();
+        Collection<Board> neighbors = new LinkedList<>();
 
         if (this.emptyI > 0) {
             neighbors.add(this.up());
