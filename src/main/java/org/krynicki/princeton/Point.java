@@ -77,7 +77,7 @@ public class Point implements Comparable<Point> {
      * (x1, y1) if and only if either y0 < y1 or if y0 = y1 and x0 < x1.
      *
      * @param that the other point
-     * @return the value <tt>0</tt> if this point is equal to the argument
+     * @return the point <tt>0</tt> if this point is equal to the argument
      * point (x0 = x1 and y0 = y1);
      * a negative integer if this point is less than the argument
      * point; and a positive integer if this point is greater than the

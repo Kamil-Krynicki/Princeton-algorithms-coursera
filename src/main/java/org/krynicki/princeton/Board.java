@@ -14,7 +14,7 @@ public class Board {
     private int emptyI;
     private int emptyJ;
 
-    private int manhatan = -1;
+    private int manhattan = -1;
     private int hamming = -1;
 
     public Board(int[][] blocks) {
@@ -118,7 +118,7 @@ public class Board {
 
     // sum of Manhattan distances between blocks and goal
     public int manhattan() {
-        int result = this.manhatan;
+        int result = this.manhattan;
         if (result < 0) {
             result = 0;
             int value = 1;
@@ -131,7 +131,7 @@ public class Board {
                     value++;
                 }
             }
-            this.manhatan = result;
+            this.manhattan = result;
         }
         return result;
     }
