@@ -35,8 +35,6 @@ public class PercolationStats {
                 } while (p.isOpen(randRow, randCol));
 
                 p.open(randRow, randCol);
-
-
             }
 
             results[i] = ((double) attemtps) / (size * size);
