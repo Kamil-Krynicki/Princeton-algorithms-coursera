@@ -1,13 +1,9 @@
 package org.krynicki.princeton;
 
-import edu.princeton.cs.algorithms.BreadthFirstPaths;
-import edu.princeton.cs.algorithms.Digraph;
-import edu.princeton.cs.algorithms.Graph;
-import edu.princeton.cs.algorithms.Topological;
-import edu.princeton.cs.algs4.DigraphGenerator;
-import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.Topological;
 
-import java.util.*;
+import java.util.LinkedList;
 
 /**
  * Created by K on 2017-01-24.

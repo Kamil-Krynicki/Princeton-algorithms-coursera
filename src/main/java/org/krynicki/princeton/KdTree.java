@@ -7,7 +7,6 @@ import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.*;
 import java.util.Collections;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by K on 2016-10-05.

@@ -30,13 +30,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.googlecode.princeton-java-algorithms/algorithms -->
-        <dependency>
-            <groupId>com.googlecode.princeton-java-algorithms</groupId>
-            <artifactId>algorithms</artifactId>
-            <version>4.0.1</version>
-        </dependency>
-
         <dependency>
             <groupId>edu.princeton.cs</groupId>
             <artifactId>algs4</artifactId>

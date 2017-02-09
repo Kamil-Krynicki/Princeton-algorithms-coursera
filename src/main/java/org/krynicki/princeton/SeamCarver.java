@@ -1,6 +1,6 @@
 package org.krynicki.princeton;
 
-import edu.princeton.cs.introcs.Picture;
+import edu.princeton.cs.algs4.Picture;
 
 import java.awt.*;
 import java.io.File;
@@ -51,7 +51,7 @@ public class SeamCarver {
         double vEnergy = energy(picture.get(x, y + 1), picture.get(x, y - 1));
         double hEnergy = energy(picture.get(x + 1, y), picture.get(x - 1, y));
 
-        return Math.sqrt(vEnergy * vEnergy + hEnergy * hEnergy);
+        return Math.sqrt(vEnergy + hEnergy);
     }
 
     private double energy(Color a, Color b) {
@@ -86,31 +86,31 @@ public class SeamCarver {
     public int[] findVerticalSeam() {
         double[] prvCosts = new double[w()];
         double[] nextCosts = new double[w()];
-        int[][] parents = new int[w()][h()];
+        int[][] parents = new int[h()][w()];
 
-        Arrays.fill(prvCosts, MAX_ENERGY);
+        Arrays.fill(nextCosts, MAX_ENERGY);
         Arrays.fill(parents[0], 0);
 
 
-        for (int y = 0; y < h()-1; y++) {
+        for (int y = 0; y < h() - 1; y++) {
             prvCosts = nextCosts;
             nextCosts = new double[w()];
             Arrays.fill(nextCosts, Double.MAX_VALUE);
 
             for (int x = 1; x < w() - 1; x++) {
-                if(nextCosts[x-1] > prvCosts[x] + energy(x-1, y+1)) {
-                    nextCosts[x-1] = prvCosts[x] + energy(x-1, y+1);
-                    parents[x-1][y+1] = x;
+                if (nextCosts[x - 1] > prvCosts[x] + energy(x - 1, y + 1)) {
+                    nextCosts[x - 1] = prvCosts[x] + energy(x - 1, y + 1);
+                    parents[y + 1][x - 1] = x;
                 }
 
-                if(nextCosts[x+1] > prvCosts[x] + energy(x+1, y+1)) {
-                    nextCosts[x+1] = prvCosts[x] + energy(x+1, y+1);
-                    parents[x+1][y+1] = x;
+                if (nextCosts[x + 1] > prvCosts[x] + energy(x + 1, y + 1)) {
+                    nextCosts[x + 1] = prvCosts[x] + energy(x + 1, y + 1);
+                    parents[y + 1][x + 1] = x;
                 }
 
-                if(nextCosts[x] > prvCosts[x] + energy(x, y+1)) {
-                    nextCosts[x] = prvCosts[x] + energy(x, y+1);
-                    parents[x][y+1] = x;
+                if (nextCosts[x] > prvCosts[x] + energy(x, y + 1)) {
+                    nextCosts[x] = prvCosts[x] + energy(x, y + 1);
+                    parents[y + 1][x] = x;
                 }
             }
         }
@@ -129,9 +129,17 @@ public class SeamCarver {
     }
 
     public static void main(String... args) {
-        Picture image  = new Picture(new File(args[0]));
+        Picture image = new Picture(new File(args[0]));
 
         SeamCarver sc = new SeamCarver(image);
+
+        for (int y = 0; y < sc.height(); y++) {
+            for (int x = 0; x < sc.width(); x++) {
+                System.out.print(sc.energy(x, y));
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
 
         sc.findVerticalSeam();
     }
