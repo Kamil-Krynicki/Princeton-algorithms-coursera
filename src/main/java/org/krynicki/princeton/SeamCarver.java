@@ -2,7 +2,7 @@ package org.krynicki.princeton;
 
 import edu.princeton.cs.algs4.Picture;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.File;
 import java.util.Arrays;
 
@@ -66,8 +66,23 @@ public class SeamCarver {
         if (y < 0 || y > pic.height() - 1) throw new IndexOutOfBoundsException();
     }
 
+    private void validate(Picture pic, int[] seam) {
+        if (pic.width() <= 1)
+            throw new IllegalArgumentException();
+        if (pic.height() != seam.length)
+            throw new IllegalArgumentException();
+
+        for (int aSeam : seam)
+            if (aSeam < 0 || aSeam > pic.width() - 1)
+                throw new IllegalArgumentException();
+
+        for (int i = 1; i < seam.length; i++)
+            if (Math.abs(seam[i - 1] - seam[i]) > 1)
+                throw new IllegalArgumentException();
+    }
+
     private <T> T notNull(T o) {
-        if(o == null) throw new NullPointerException();
+        if (o == null) throw new NullPointerException();
         return o;
     }
 
@@ -85,7 +100,7 @@ public class SeamCarver {
         int w = pic.width();
         int h = pic.height();
 
-        double[] prvCosts = new double[w];
+        double[] prvCosts;
         double[] nextCosts = new double[w];
         int[][] parents = new int[h][w];
 
@@ -123,9 +138,8 @@ public class SeamCarver {
         int next = start;
         int y = parents.length;
 
-        while(--y >= 0) {
-            result[y] = next;
-            next = parents[y][next];
+        while (--y >= 0) {
+            next = parents[y][result[y] = next];
         }
 
         return result;
@@ -135,8 +149,8 @@ public class SeamCarver {
         double minCost = nextCosts[0];
         int minCostIndex = 0;
 
-        for(int i = 1; i < nextCosts.length; i++) {
-            if(nextCosts[i] < minCost) {
+        for (int i = 1; i < nextCosts.length; i++) {
+            if (nextCosts[i] < minCost) {
                 minCost = nextCosts[i];
                 minCostIndex = i;
             }
@@ -155,19 +169,16 @@ public class SeamCarver {
     }
 
     private Picture removeSeam(Picture pic, int[] seam) {
-        if(pic.height()!=seam.length) throw new IllegalArgumentException();
-        if(pic.width() <= 1) throw new IllegalArgumentException();
+        validate(pic, seam);
 
         Picture out = new Picture(pic.width() - 1, pic.height());
 
-        for(int y = 0; y < pic.height(); y++) {
-            if(seam[y] >= pic.width()) throw new IllegalArgumentException();
-
-            for(int x = 0; x < seam[y]; x++)
+        for (int y = 0; y < pic.height(); y++) {
+            for (int x = 0; x < seam[y]; x++)
                 out.set(x, y, pic.get(x, y));
 
-            for(int x = seam[y]+1; x < pic.width(); x++)
-                out.set(x - 1 , y, pic.get(x, y));
+            for (int x = seam[y] + 1; x < pic.width(); x++)
+                out.set(x - 1, y, pic.get(x, y));
         }
 
         return out;
@@ -176,11 +187,9 @@ public class SeamCarver {
     private Picture rot(Picture pic) {
         Picture rotated = new Picture(pic.height(), pic.width());
 
-        for(int x = 0; x < pic.width(); x++) {
-            for(int y = 0; y < pic.height(); y++) {
+        for (int x = 0; x < pic.width(); x++)
+            for (int y = 0; y < pic.height(); y++)
                 rotated.set(y, x, pic.get(x, y));
-            }
-        }
 
         return rotated;
     }
@@ -196,68 +205,68 @@ public class SeamCarver {
         System.out.println(Arrays.toString(sc.findVerticalSeam()));
 
 
-       sc.removeVerticalSeam(sc.findVerticalSeam());
+        sc.removeVerticalSeam(sc.findVerticalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findVerticalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findVerticalSeam()));
 
-       sc.removeVerticalSeam(sc.findVerticalSeam());
+        sc.removeVerticalSeam(sc.findVerticalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findVerticalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findVerticalSeam()));
 
-       sc.removeVerticalSeam(sc.findVerticalSeam());
+        sc.removeVerticalSeam(sc.findVerticalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findVerticalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findVerticalSeam()));
 
-       sc.removeVerticalSeam(sc.findVerticalSeam());
+        sc.removeVerticalSeam(sc.findVerticalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findVerticalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findVerticalSeam()));
 
-       sc.removeVerticalSeam(sc.findVerticalSeam());
+        sc.removeVerticalSeam(sc.findVerticalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findVerticalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findVerticalSeam()));
 
-       //sc.removeVerticalSeam(sc.findVerticalSeam());
+        //sc.removeVerticalSeam(sc.findVerticalSeam());
 
-       //print(sc);
-       System.out.println(Arrays.toString(sc.findVerticalSeam()));
+        //print(sc);
+        System.out.println(Arrays.toString(sc.findVerticalSeam()));
 
-       image = new Picture(new File(args[0]));
+        image = new Picture(new File(args[0]));
 
-       sc = new SeamCarver(image);
+        sc = new SeamCarver(image);
 
-       print(sc);
+        print(sc);
 
-       System.out.println(Arrays.toString(sc.findHorizontalSeam()));
+        System.out.println(Arrays.toString(sc.findHorizontalSeam()));
 
 
-       sc.removeHorizontalSeam(sc.findHorizontalSeam());
+        sc.removeHorizontalSeam(sc.findHorizontalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findHorizontalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findHorizontalSeam()));
 
-       sc.removeHorizontalSeam(sc.findHorizontalSeam());
+        sc.removeHorizontalSeam(sc.findHorizontalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findHorizontalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findHorizontalSeam()));
 
-       sc.removeHorizontalSeam(sc.findHorizontalSeam());
+        sc.removeHorizontalSeam(sc.findHorizontalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findHorizontalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findHorizontalSeam()));
 
-       sc.removeHorizontalSeam(sc.findHorizontalSeam());
+        sc.removeHorizontalSeam(sc.findHorizontalSeam());
 
-       print(sc);
-       System.out.println(Arrays.toString(sc.findHorizontalSeam()));
+        print(sc);
+        System.out.println(Arrays.toString(sc.findHorizontalSeam()));
 
-       long t2 = System.currentTimeMillis();
+        long t2 = System.currentTimeMillis();
 
-       System.out.println(t2-t1);
+        System.out.println(t2 - t1);
     }
 
     private static void print(SeamCarver sc) {
