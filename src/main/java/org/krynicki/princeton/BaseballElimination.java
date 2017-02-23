@@ -1,13 +1,17 @@
-package org.krynicki.princeton;
-
 import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FordFulkerson;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by K on 2/21/2017.
@@ -54,64 +58,11 @@ public class BaseballElimination {
         }
     }
 
-    private Set<String> eliminatorsTrivial(int x) {
-        Set<String> eliminators = new HashSet<>();
-
-        for (String team : teams.keySet()) {
-            if (w[x] + r[x] < w[id(team)])
-                eliminators.add(team);
-        }
-
-        return eliminators;
-    }
-
-    private Set<String> eliminatorsFlow(int x) {
-        FlowNetwork network = flowNetwork(x);
-        FordFulkerson flow = new FordFulkerson(network, network.V() - 2, network.V() - 1);
-
-        Set<String> eliminators = new HashSet<>();
-
-        for (String team : teams.keySet()) {
-            if (flow.inCut(id(team)))
-                eliminators.add(team);
-        }
-
-        return eliminators;
-    }
-
-    private FlowNetwork flowNetwork(int x) {
-        FlowNetwork network = new FlowNetwork((N + 1) * N / 2 + 2);
-
-        int sourceNode = network.V() - 2;
-        int targetNode = network.V() - 1;
-
-        int matchRoot = N - 1;
-        int teamRoot = 0;
-
-        for (int i = 0; i < N; i++) {
-            if (x == i) continue;
-
-            network.addEdge(new FlowEdge(teamRoot + i, targetNode, w[x] + r[x] - w[i]));
-
-            for (int j = i + 1; j < N; j++) {
-                matchRoot++;
-
-                if (x == j) continue;
-
-                network.addEdge(new FlowEdge(sourceNode, matchRoot, g[i][j]));
-                network.addEdge(new FlowEdge(matchRoot, teamRoot + i, Integer.MAX_VALUE));
-                network.addEdge(new FlowEdge(matchRoot, teamRoot + j, Integer.MAX_VALUE));
-            }
-        }
-
-        return network;
-    }
-
     private int id(String team) {
-        if (teams.containsKey(team))
-            return teams.get(team);
-        else
+        if (!teams.containsKey(team))
             throw new IllegalArgumentException();
+
+        return teams.get(team);
     }
 
     // number of teams
@@ -155,24 +106,68 @@ public class BaseballElimination {
     }
 
     private Set<String> eliminators(String team) {
-        if (!eliminators.containsKey(team)) {
-            Set<String> eliminators;
-            int id = id(team);
+        if (eliminators.containsKey(team)) {
+            return eliminators.get(team);
+        }
 
-            eliminators = eliminatorsTrivial(id);
-            if (!eliminators.isEmpty()) {
-                this.eliminators.put(team, eliminators);
-            } else {
-                eliminators = eliminatorsFlow(id);
-                if (!eliminators.isEmpty()) {
-                    this.eliminators.put(team, eliminators);
-                } else {
-                    this.eliminators.put(team, Collections.emptySet());
-                }
+        List<Function<Integer, Set<String>>> u = Arrays.asList(new EliminatorsTrivial(), new EliminatorsFlow());
+
+        int id = id(team);
+        for(Function<Integer, Set<String>> f : u) {
+            Set<String> e = f.apply(id);
+            if(!e.isEmpty()) {
+                eliminators.put(team, e);
+                return e;
             }
         }
 
-        return eliminators.get(team);
+        eliminators.put(team, Collections.emptySet());
+        return Collections.emptySet();
+    }
+
+    private class EliminatorsTrivial implements Function<Integer, Set<String>> {
+        @Override
+        public Set<String> apply(Integer x) {
+            return teams.keySet().stream().filter(team -> w[x] + r[x] < w[id(team)]).collect(Collectors.toSet());
+        }
+    }
+
+    private class EliminatorsFlow implements Function<Integer, Set<String>> {
+        @Override
+        public Set<String> apply(Integer x) {
+            FlowNetwork network = flowNetwork(x);
+            FordFulkerson flow = new FordFulkerson(network, network.V() - 2, network.V() - 1);
+
+            return teams.keySet().stream().filter(team -> flow.inCut(id(team))).collect(Collectors.toSet());
+        }
+    }
+
+    private FlowNetwork flowNetwork(int x) {
+        FlowNetwork network = new FlowNetwork((N + 1) * N / 2 + 2);
+
+        int sourceNode = network.V() - 2;
+        int targetNode = network.V() - 1;
+
+        int matchRoot = N - 1;
+        int teamRoot = 0;
+
+        for (int i = 0; i < N; i++) {
+            if (x == i) continue;
+
+            network.addEdge(new FlowEdge(teamRoot + i, targetNode, w[x] + r[x] - w[i]));
+
+            for (int j = i + 1; j < N; j++) {
+                matchRoot++;
+
+                if (x == j) continue;
+
+                network.addEdge(new FlowEdge(sourceNode, matchRoot, g[i][j]));
+                network.addEdge(new FlowEdge(matchRoot, teamRoot + i, Integer.MAX_VALUE));
+                network.addEdge(new FlowEdge(matchRoot, teamRoot + j, Integer.MAX_VALUE));
+            }
+        }
+
+        return network;
     }
 
     public static void main(String... args) {
