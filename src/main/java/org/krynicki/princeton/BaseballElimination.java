@@ -7,10 +7,7 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by K on 2/21/2017.
@@ -18,7 +15,8 @@ import java.util.Set;
 public class BaseballElimination {
     private final int N;
 
-    private final Map<String, Integer> names;
+    private final Map<String, Integer> teams;
+    private final Map<String, Set<String>> eliminators;
 
     private final int[] w;
     private final int[] l;
@@ -26,120 +24,94 @@ public class BaseballElimination {
 
     private final int[][] g;
 
-
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
-        In in = new In(new File(filename));
+        In in = new In(filename);
 
-        this.N = Integer.valueOf(in.readLine());
+        this.N = in.readInt();
 
-        this.names = new HashMap<>();
+        this.teams = new HashMap<>();
+        this.eliminators = new HashMap<>();
+
         this.w = new int[N];
         this.l = new int[N];
         this.r = new int[N];
-
         this.g = new int[N][N];
 
-        String line;
         int team = 0;
-        while ((line = in.readLine()) != null) {
-            String[] split = line.split("[\\s]+");
+        while (!in.isEmpty()) {
+            teams.put(in.readString(), team);
 
-            names.put(split[0], team);
+            w[team] = in.readInt();
+            l[team] = in.readInt();
+            r[team] = in.readInt();
+            g[team] = new int[N];
 
-            w[team] = Integer.valueOf(split[1]);
-            l[team] = Integer.valueOf(split[2]);
-            r[team] = Integer.valueOf(split[3]);
-            g[team] = against(split);
+            for (int i = 0; i < N; i++)
+                g[team][i] = in.readInt();
 
             team++;
         }
-
-        System.out.println();
-
-        for(String t: names.keySet()) {
-            System.out.println(t + ", " + isEliminated(t));
-        }
     }
 
-    private int[] against(String[] split) {
-        int[] result = new int[N];
+    private Set<String> eliminatorsTrivial(int x) {
+        Set<String> eliminators = new HashSet<>();
 
-        for (int i = 0; i < N; i++)
-            result[i] = Integer.valueOf(split[i + 4]);
-
-        return result;
-    }
-
-    private boolean isEliminatedTrivial(int x) {
-        return w[x] + r[x] < w[0];
-    }
-
-    private boolean isEliminated(int x) {
-        FlowNetwork flowNetwork = flowNetwork(x);
-
-
-        StdOut.println(flowNetwork);
-
-        // compute maximum flow and minimum cut
-        FordFulkerson ff = new FordFulkerson(flowNetwork, 0, flowNetwork.V()-1);
-        //StdOut.println("Max flow from " + 0 + " to " + (N-1));
-        //for (int v = 0; v < flowNetwork.V(); v++) {
-        //    for (FlowEdge e : flowNetwork.adj(v)) {
-        //        if ((v == e.from()) && e.flow() > 0)
-        //            StdOut.println("   " + e);
-        //    }
-        //}
-
-        // print min-cut
-
-        Set<Integer> dupa = new HashSet<>();
-        for (int v = 1; v < flowNetwork.V() - N - 2; v++) {
-            if(v == x) continue;
-            if (ff.inCut(v)) {
-                dupa.add(v-1);
-            }
+        for (String team : teams.keySet()) {
+            if (w[x] + r[x] < w[id(team)])
+                eliminators.add(team);
         }
 
-        System.out.println(dupa);
+        return eliminators;
+    }
 
-        return !dupa.isEmpty();
+    private Set<String> eliminatorsFlow(int x) {
+        FlowNetwork network = flowNetwork(x);
+        FordFulkerson flow = new FordFulkerson(network, network.V() - 2, network.V() - 1);
+
+        Set<String> eliminators = new HashSet<>();
+
+        for (String team : teams.keySet()) {
+            if (flow.inCut(id(team)))
+                eliminators.add(team);
+        }
+
+        return eliminators;
     }
 
     private FlowNetwork flowNetwork(int x) {
-        int nodeCount = (N + 1) * N / 2;
+        FlowNetwork network = new FlowNetwork((N + 1) * N / 2 + 2);
 
-        FlowNetwork matches = new FlowNetwork(nodeCount + 2);
+        int sourceNode = network.V() - 2;
+        int targetNode = network.V() - 1;
 
-        int sourceNode = 0;
-        int targetNode = matches.V() - 1;
+        int matchRoot = N - 1;
+        int teamRoot = 0;
 
-        int matchNode = 1;
-        int teamNode = matches.V() - N - 1;
+        for (int i = 0; i < N; i++) {
+            if (x == i) continue;
 
-        for (int team1 = 0; team1 < N; team1++)
-            for (int team2 = team1 + 1; team2 < N; team2++) {
-                int capacity = (team1 == x || team2 == x)?0:g[team1][team2];
-                matches.addEdge(new FlowEdge(sourceNode, matchNode, capacity));
-                matches.addEdge(new FlowEdge(matchNode, teamNode + team1, Integer.MAX_VALUE));
-                matches.addEdge(new FlowEdge(matchNode, teamNode + team2, Integer.MAX_VALUE));
-                matchNode++;
+            network.addEdge(new FlowEdge(teamRoot + i, targetNode, w[x] + r[x] - w[i]));
+
+            for (int j = i + 1; j < N; j++) {
+                matchRoot++;
+
+                if (x == j) continue;
+
+                network.addEdge(new FlowEdge(sourceNode, matchRoot, g[i][j]));
+                network.addEdge(new FlowEdge(matchRoot, teamRoot + i, Integer.MAX_VALUE));
+                network.addEdge(new FlowEdge(matchRoot, teamRoot + j, Integer.MAX_VALUE));
             }
-
-        for(int i = 0; i < N; i++) {
-            int capacity = w[x] + r[x] - w[i];
-            matches.addEdge(new FlowEdge(teamNode + i, targetNode, capacity>0?capacity:0));
         }
 
-        return matches;
+        return network;
     }
 
     private int id(String team) {
-        if (names.containsKey(team)) {
-            return names.get(team);
-        } else {
+        if (teams.containsKey(team))
+            return teams.get(team);
+        else
             throw new IllegalArgumentException();
-        }
     }
 
     // number of teams
@@ -149,7 +121,7 @@ public class BaseballElimination {
 
     // all teams
     public Iterable<String> teams() {
-        return names.keySet();
+        return teams.keySet();
     }
 
     // number of wins for given team
@@ -174,15 +146,46 @@ public class BaseballElimination {
 
     // is given team eliminated?
     public boolean isEliminated(String team) {
-        return isEliminated(id(team));
+        return !eliminators(team).isEmpty();
     }
 
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
-        return null;
+        return eliminators(team).isEmpty() ? null : eliminators(team);
+    }
+
+    private Set<String> eliminators(String team) {
+        if (!eliminators.containsKey(team)) {
+            Set<String> eliminators;
+            int id = id(team);
+
+            eliminators = eliminatorsTrivial(id);
+            if (!eliminators.isEmpty()) {
+                this.eliminators.put(team, eliminators);
+            } else {
+                eliminators = eliminatorsFlow(id);
+                if (!eliminators.isEmpty()) {
+                    this.eliminators.put(team, eliminators);
+                } else {
+                    this.eliminators.put(team, Collections.emptySet());
+                }
+            }
+        }
+
+        return eliminators.get(team);
     }
 
     public static void main(String... args) {
-        new BaseballElimination(args[0]);
+        BaseballElimination division = new BaseballElimination(args[0]);
+        for (String team : division.teams()) {
+            if (division.isEliminated(team)) {
+                StdOut.print(team + " is eliminated by the subset R = { ");
+                for (String t : division.certificateOfElimination(team))
+                    StdOut.print(t + " ");
+                StdOut.println("}");
+            } else {
+                StdOut.println(team + " is not eliminated");
+            }
+        }
     }
 }
