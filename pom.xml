@@ -35,6 +35,11 @@
             <artifactId>algs4</artifactId>
             <version>1.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>RELEASE</version>
+        </dependency>
 
     </dependencies>
 
