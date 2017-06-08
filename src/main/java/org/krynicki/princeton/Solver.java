@@ -3,70 +3,96 @@ package org.krynicki.princeton;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.Stack;
 
-import java.util.Comparator;
+import java.util.LinkedList;
 
 /**
  * Created by K on 2016-09-29.
  */
 public class Solver {
 
-    private static final Comparator<SearchNode> COMPARATOR = new Comparator<SearchNode>() {
-        @Override
-        public int compare(SearchNode o1, SearchNode o2) {
-            return (o1.board().manhattan() + o1.moves()) - (o2.board().manhattan() + o2.moves());
-        }
-    };
-
-    private SearchNode solution;
-    private boolean solvable;
+    private SearchNode solution = null;
+    private boolean solvable = false;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
         if (initial == null) throw new NullPointerException("initial == null");
 
-        Board twin = initial.twin();
-
-        MinPQ<SearchNode> mainSearch = new MinPQ<>(20, COMPARATOR);
-        MinPQ<SearchNode> twinSearch = new MinPQ<>(20, COMPARATOR);
+        MinPQ<SearchNode> mainSearch = new MinPQ<>();
+        MinPQ<SearchNode> twinSearch = new MinPQ<>();
 
         mainSearch.insert(new SearchNode(initial));
-        twinSearch.insert(new SearchNode(twin));
+        twinSearch.insert(new SearchNode(initial.twin()));
 
-        SearchNode current;
+        while (!hasReachedGoal(mainSearch) && !hasReachedGoal(twinSearch)) {
+            step(mainSearch);
+            step(twinSearch);
+        }
 
-        do {
-            current = mainSearch.delMin();
+        if(hasReachedGoal(mainSearch)) {
+            this.solution = mainSearch.min();
+            this.solvable = true;
+        }
+    }
 
-            if (current.board().isGoal()) {
-                solvable = true;
-                solution = current;
-                return;
-            }
+    private boolean hasReachedGoal(MinPQ<SearchNode> nodes) {
+        return nodes.min().board().isGoal();
+    }
 
-            for (Board newBoard : current.board().neighbors()) {
-                if (!current.hasVisited(newBoard)) {
-                    mainSearch.insert(new SearchNode(newBoard, current));
-                }
-            }
+    private void step(MinPQ<SearchNode> nodes) {
+        SearchNode current = nodes.delMin();
 
-            current = twinSearch.delMin();
-
-            if (current.board().isGoal()) {
-                solvable = false;
-                solution = null;
-                return;
-            }
-
-
-            for (Board newBoard : current.board().neighbors()) {
-                if (!current.hasVisited(newBoard)) {
-                    twinSearch.insert(new SearchNode(newBoard, current));
-                }
+        for (Board newBoard : current.board().neighbors()) {
+            if (!current.hasVisited(newBoard)) {
+                nodes.insert(new SearchNode(newBoard, current));
             }
         }
-        while (true);
+    }
+
+    // is the initial board solvable?
+    public boolean isSolvable() {
+        return solvable;
+    }
+
+    // min number of moves to solve initial board; -1 if unsolvable
+    public int moves() {
+        return solvable ? solution.moves() : -1;
+    }
+
+    // sequence of boards in a shortest solution; null if unsolvable
+    public Iterable<Board> solution() {
+        return solvable ? solution.history : null;
+    }
+
+    private class SearchNode implements Comparable<SearchNode> {
+        private LinkedList<Board> history;
+
+        public SearchNode(Board thisBoard) {
+            history = new LinkedList<>();
+            history.add(thisBoard);
+        }
+
+        public SearchNode(Board thisBoard, SearchNode parent) {
+            history = new LinkedList<>(parent.history);
+            history.add(thisBoard);
+        }
+
+        public boolean hasVisited(Board board) {
+            return history.contains(board);
+        }
+
+        public Board board() {
+            return history.getLast();
+        }
+
+        public int moves() {
+            return history.size();
+        }
+
+        @Override
+        public int compareTo(SearchNode that) {
+            return (this.board().manhattan() + this.moves()) - (that.board().manhattan() + that.moves());
+        }
     }
 
     // solve a slider puzzle (given below)
@@ -91,70 +117,6 @@ public class Solver {
             StdOut.println("Minimum number of moves = " + solver.moves());
             for (Board board : solver.solution())
                 StdOut.println(board);
-        }
-    }
-
-    // is the initial board solvable?
-    public boolean isSolvable() {
-        return solvable;
-    }
-
-    // min number of moves to solve initial board; -1 if unsolvable
-    public int moves() {
-        if (solvable) {
-            return solution.moves();
-        } else {
-            return -1;
-        }
-    }
-
-    // sequence of boards in a shortest solution; null if unsolvable
-    public Iterable<Board> solution() {
-        if (solvable) {
-            Stack<Board> result = new Stack<>();
-            SearchNode sn = solution;
-            while (sn != null) {
-                result.push(sn.board());
-                sn = sn.parent;
-            }
-
-            return result;
-        } else {
-            return null;
-        }
-    }
-
-    private class SearchNode {
-        private Board thisBoard;
-        private SearchNode parent;
-
-        private int moves;
-
-        public SearchNode(Board thisBoard) {
-            this.thisBoard = thisBoard;
-            this.moves = 0;
-            this.parent = null;
-        }
-
-        public SearchNode(Board thisBoard, SearchNode parent) {
-            this.thisBoard = thisBoard;
-            this.parent = parent;
-            this.moves = parent.moves + 1;
-        }
-
-        public boolean hasVisited(Board board) {
-            if (thisBoard.equals(board)) return true;
-            if (parent == null) return false;
-
-            return parent.hasVisited(board);
-        }
-
-        public Board board() {
-            return thisBoard;
-        }
-
-        public int moves() {
-            return moves;
         }
     }
 }
