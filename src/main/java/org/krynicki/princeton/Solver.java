@@ -12,7 +12,6 @@ import java.util.LinkedList;
 public class Solver {
 
     private SearchNode solution = null;
-    private boolean solvable = false;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
@@ -29,10 +28,8 @@ public class Solver {
             step(twinSearch);
         }
 
-        if(hasReachedGoal(mainSearch)) {
+        if(hasReachedGoal(mainSearch))
             this.solution = mainSearch.min();
-            this.solvable = true;
-        }
     }
 
     private boolean hasReachedGoal(MinPQ<SearchNode> nodes) {
@@ -51,17 +48,17 @@ public class Solver {
 
     // is the initial board solvable?
     public boolean isSolvable() {
-        return solvable;
+        return solution != null;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
-        return solvable ? solution.moves() : -1;
+        return isSolvable() ? solution.moves() : -1;
     }
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
-        return solvable ? solution.history : null;
+        return isSolvable() ? solution.history : null;
     }
 
     private class SearchNode implements Comparable<SearchNode> {
