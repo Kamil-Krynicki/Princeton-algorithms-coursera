@@ -1,4 +1,4 @@
-package org.krynicki.princeton;
+
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -7,11 +7,10 @@ import java.util.List;
 /**
  * Created by K on 2016-09-26.
  */
-public class FastCollinearPoints {
+public class BruteCollinearPoints {
     private LineSegment[] lineSegments;
 
-    // finds all line segments containing 4 or more points
-    public FastCollinearPoints(Point[] points) {
+    public BruteCollinearPoints(Point[] points) {
         if (points == null) throw new NullPointerException("points == null");
 
         if (points.length < 2) {
@@ -29,31 +28,31 @@ public class FastCollinearPoints {
 
         Point[] pointsCopy = Arrays.copyOf(points, points.length);
 
+        Arrays.sort(pointsCopy);
+
         if (pointsCopy.length < 4) {
             this.lineSegments = new LineSegment[0];
             return;
         }
 
+
         List<LineSegment> tmpSegments = new LinkedList<>();
 
-        for (int i = 0; i < pointsCopy.length - 3; i++) {
-
-            Arrays.sort(pointsCopy);
-            Arrays.sort(pointsCopy, pointsCopy[i].slopeOrder());
-
-            for (int from = 1, to = 2; to < pointsCopy.length; to++) {
-                while (to < pointsCopy.length
-                        && Double.compare(pointsCopy[0].slopeTo(pointsCopy[from]), pointsCopy[0].slopeTo(pointsCopy[to])) == 0) {
-                    to++;
+        for (int i = 0; i < pointsCopy.length; i++) {
+            for (int j = i + 1; j < pointsCopy.length; j++) {
+                for (int k = j + 1; k < pointsCopy.length; k++) {
+                    for (int l = k + 1; l < pointsCopy.length; l++) {
+                        if (pointsCopy[j].slopeOrder().compare(pointsCopy[i], pointsCopy[k]) == 0
+                                && pointsCopy[k].slopeOrder().compare(pointsCopy[j], pointsCopy[l]) == 0) {
+                            tmpSegments.add(new LineSegment(pointsCopy[i], pointsCopy[l]));
+                        }
+                    }
                 }
-                if (to - from > 2 && pointsCopy[0].compareTo(pointsCopy[from]) < 0) {
-                    tmpSegments.add(new LineSegment(pointsCopy[0], pointsCopy[to - 1]));
-                }
-                from = to;
             }
         }
 
         this.lineSegments = tmpSegments.toArray(new LineSegment[0]);
+
     }
 
     // the number of line segments

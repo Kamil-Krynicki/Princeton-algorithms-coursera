@@ -1,4 +1,4 @@
-package org.krynicki.princeton;
+
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

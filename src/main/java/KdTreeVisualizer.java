@@ -1,4 +1,4 @@
-package org.krynicki.princeton; /******************************************************************************
+/******************************************************************************
  *  Compilation:  javac KdTreeVisualizer.java
  *  Execution:    java KdTreeVisualizer
  *  Dependencies: KdTree.java

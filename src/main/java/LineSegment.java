@@ -1,4 +1,4 @@
-package org.krynicki.princeton;
+
 
 /*************************************************************************
  *  Compilation:  javac LineSegment.java

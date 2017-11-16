@@ -1,4 +1,4 @@
-package org.krynicki.princeton;
+
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;

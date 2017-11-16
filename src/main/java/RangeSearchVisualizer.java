@@ -1,4 +1,4 @@
-package org.krynicki.princeton; /******************************************************************************
+/******************************************************************************
  *  Compilation:  javac RangeSearchVisualizer.java
  *  Execution:    java RangeSearchVisualizer input.txt
  *  Dependencies: PointSET.java KdTree.java

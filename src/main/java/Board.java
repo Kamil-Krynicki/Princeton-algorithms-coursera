@@ -1,4 +1,4 @@
-package org.krynicki.princeton;
+
 
 import java.util.Collection;
 import java.util.LinkedList;

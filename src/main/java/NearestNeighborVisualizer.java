@@ -1,4 +1,4 @@
-package org.krynicki.princeton; /******************************************************************************
+/******************************************************************************
  *  Compilation:  javac NearestNeighborVisualizer.java
  *  Execution:    java NearestNeighborVisualizer input.txt
  *  Dependencies: PointSET.java KdTree.java
