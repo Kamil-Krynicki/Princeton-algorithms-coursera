@@ -1,10 +1,11 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class CircularSuffixArray {
 
-    private final List<String> suffixes;
+    private final List<LightWeightString> suffixes;
 
     // circular suffix array of s
     public CircularSuffixArray(String s) {
@@ -14,7 +15,7 @@ public class CircularSuffixArray {
         suffixes = new ArrayList<>(s.length());
 
         for (int i = 0; i < s.length(); i++)
-            suffixes.add(s.substring(i));
+            suffixes.add(new LightWeightString(s.toCharArray(), i));
 
         Collections.sort(suffixes);
     }
@@ -29,14 +30,66 @@ public class CircularSuffixArray {
         if(i < 0 || i >= length())
             throw new IllegalArgumentException();
 
-        return suffixes.size() - suffixes.get(i).length();
+        return suffixes.size() - suffixes.get(i).size();
     }
 
-    // unit testing of the methods (optional)
-    public static void main(String[] args) {
-        CircularSuffixArray circularSuffixArray = new CircularSuffixArray("ABRACADABRA!");
+    private static class LightWeightString implements Comparable<LightWeightString> {
+        private char[] data;
+        private int offset;
 
-        System.out.println(circularSuffixArray.index(11));
-        System.out.println(circularSuffixArray.index(3));
+        LightWeightString(char[] data, int offset) {
+            this.data = data;
+            this.offset = offset;
+        }
+
+        int size() {
+            return data.length - offset;
+        }
+
+        char charAt(int i) {
+            return data[(i + offset) % data.length];
+        }
+
+        @Override
+        public String toString() {
+            char[] result = new char[data.length];
+            System.arraycopy(data, offset, result, 0, data.length - offset);
+            System.arraycopy(data, 0, result, data.length - offset, offset);
+
+            return new String(result);
+        }
+
+        @Override
+        public int compareTo(LightWeightString that) {
+            for (int i = 0; i < data.length; i++) {
+                if (that.charAt(i) < this.charAt(i))
+                    return 1;
+                if (that.charAt(i) > this.charAt(i))
+                    return -1;
+            }
+
+            return 0;
+        }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
