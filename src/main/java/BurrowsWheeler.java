@@ -1,12 +1,15 @@
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
 
-import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 public class BurrowsWheeler {
     // apply Burrows-Wheeler encoding, reading from standard input and writing to standard output
     public static void encode() {
-        char[] input = readInput();
+        char[] input = BinaryStdIn.readString().toCharArray();
 
         CircularSuffixArray csa = new CircularSuffixArray(String.valueOf(input));
 
@@ -20,45 +23,70 @@ public class BurrowsWheeler {
             }
         }
 
-        writeOutput(result);
-    }
-
-    private static void writeOutput(char[] result) {
-        for (char c : result)
-            BinaryStdOut.write(c, 8);
-
-        BinaryStdOut.flush();
+        BinaryStdOut.write(new String(result));
         BinaryStdOut.close();
-        BinaryStdIn.close();
-    }
-
-    private static char[] readInput() {
-        StringBuilder b = new StringBuilder();
-
-        while (!BinaryStdIn.isEmpty())
-            b.append(BinaryStdIn.readChar(8));
-
-        return b.toString().toCharArray();
     }
 
     // apply Burrows-Wheeler decoding, reading from standard input and writing to standard output
     public static void decode() {
-//        char[] input = readInput();
-        char[] input = "ABRACADABRA!".toCharArray();
-        CircularSuffixArray csa = new CircularSuffixArray(String.valueOf(input));
+        int first = BinaryStdIn.readInt();
+        char[] t = BinaryStdIn.readString().toCharArray();
+        char[] f = linearSort(t);
 
-        int[] next = new int[csa.length()];
+        int[] next = generateNext(t, f);
 
-        int[] inverse = new int[csa.length()];
-        for (int i = 0; i < csa.length(); i++)
-            inverse[csa.index(i)] = i;
 
-        for (int i = 0; i < csa.length(); i++)
-            next[i] = inverse[(csa.index(i) + 1) % next.length];
+        int current = first;
+        for (int i = 0; i < next.length; i++) {
+            BinaryStdOut.write(f[current]);
+            current = next[current];
+        }
 
-        System.out.println(Arrays.toString(next));
+        BinaryStdOut.close();
     }
 
+    private static int[] generateNext(char[] t, char[] f) {
+        Map<Character, Deque<Integer>> positions = invertIndex(t);
+        int[] next = new int[t.length];
+
+        for (int i = 0; i < next.length; i++)
+            next[i] = positions.get(f[i]).pop();
+
+        return next;
+    }
+
+    private static Map<Character, Deque<Integer>> invertIndex(char[] t) {
+        Map<Character, Deque<Integer>> result = new HashMap<>();
+
+        for (int i = 0; i < t.length; i++) {
+            if (!result.containsKey(t[i]))
+                result.put(t[i], new LinkedList<>());
+
+            result.get(t[i]).addLast(i);
+        }
+
+        return result;
+    }
+
+    private static char[] linearSort(char[] input) {
+        int[] counts = counts(input);
+
+        char[] result = new char[input.length];
+        int letter = 0;
+        for (int i = 0; i < counts.length; i++)
+            while (counts[i]-- > 0)
+                result[letter++] = (char) i;
+
+        return result;
+    }
+
+    private static int[] counts(char[] input) {
+        int[] result = new int[2 << 8];
+        for (char c : input)
+            result[c]++;
+
+        return result;
+    }
 
     // if args[0] is '-', apply Burrows-Wheeler encoding
     // if args[0] is '+', apply Burrows-Wheeler decoding

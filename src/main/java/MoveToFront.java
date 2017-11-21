@@ -7,23 +7,51 @@ import edu.princeton.cs.algs4.BinaryStdOut;
  * Created by kamil.krynicki on 16/11/2017.
  */
 public class MoveToFront {
-    private static class DynamicAlphabet {
-        private char[] alphabet;
+    private static final int R = 2 << 8;
 
-        private DynamicAlphabet() {
-            alphabet = new char[256];
+    public static class DynamicAlphabetEncoding {
+        char[] alphabet;
 
-            for (int i = 0; i<256; i++) {
+        DynamicAlphabetEncoding() {
+            alphabet = new char[R];
+
+            for (int i = 0; i < R; i++)
                 alphabet[i] = (char) i;
-            }
         }
 
         int encode(char c) {
-            int code = getCodeForChar(c);
+            int result = getCodeForChar(c);
 
-            moveToFront(code);
+            moveToFront(result);
 
-            return code;
+            return result;
+        }
+
+        private void moveToFront(int code) {
+            char result = alphabet[code];
+
+            System.arraycopy(alphabet, 0, alphabet, 1, code);
+
+            alphabet[0] = result;
+        }
+
+        private int getCodeForChar(char code) {
+            int i = 0;
+            while(alphabet[i]!=code) {
+                i++;
+            }
+            return i;
+        }
+    }
+
+    public static class DynamicAlphabetDecoding {
+        private char[] alphabet;
+
+        DynamicAlphabetDecoding() {
+            alphabet = new char[R];
+
+            for (int i = 0; i < R; i++)
+                alphabet[i] = (char) i;
         }
 
         char decode(int code) {
@@ -45,42 +73,30 @@ public class MoveToFront {
         private char getCharForCode(int code) {
             return alphabet[code];
         }
-
-        private int getCodeForChar(char c) {
-            int code = 0;
-
-            while (alphabet[code] != c) {
-                code++;
-            }
-
-            return code;
-        }
     }
 
     // apply move-to-front encoding, reading from standard input and writing to standard output
     public static void encode() {
-        DynamicAlphabet alphabet = new DynamicAlphabet();
+        DynamicAlphabetEncoding alphabet = new DynamicAlphabetEncoding();
 
         while (!BinaryStdIn.isEmpty()) {
             int encode = alphabet.encode(BinaryStdIn.readChar(8));
             BinaryStdOut.write(encode, 8);
         }
 
-        BinaryStdOut.flush();
         BinaryStdOut.close();
         BinaryStdIn.close();
     }
 
     // apply move-to-front decoding, reading from standard input and writing to standard output
     public static void decode() {
-        DynamicAlphabet alphabet = new DynamicAlphabet();
+        DynamicAlphabetDecoding alphabet = new DynamicAlphabetDecoding();
 
         while (!BinaryStdIn.isEmpty()) {
             char decode = alphabet.decode(BinaryStdIn.readChar(8));
             BinaryStdOut.write(decode, 8);
         }
 
-        BinaryStdOut.flush();
         BinaryStdOut.close();
         BinaryStdIn.close();
     }
@@ -90,8 +106,12 @@ public class MoveToFront {
     public static void main(String[] args) {
         if (args.length > 0) {
             switch (args[0].charAt(0)) {
-                case '-': encode(); break;
-                case '+': decode(); break;
+                case '-':
+                    encode();
+                    break;
+                case '+':
+                    decode();
+                    break;
             }
         }
     }
